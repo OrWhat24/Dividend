@@ -1,41 +1,37 @@
 import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import mplfinance as mpf
 
-# Example directory structure
-chart_output_dirs = {
-    'Dividend_Kings': "Charts/Dividend_Kings",
-    'Dividend_Aristocrats': "Charts/Dividend_Aristocrats",
-    'Dividend_Contenders': "Charts/Dividend_Contenders"
-}
+# Ensure the chart directories exist
+if not os.path.exists('Charts/Dividend_Kings'):
+    os.makedirs('Charts/Dividend_Kings')
 
-analysis_output_dirs = {
-    'Dividend_Kings': "Analysis/Dividend_Kings",
-    'Dividend_Aristocrats': "Analysis/Dividend_Aristocrats",
-    'Dividend_Contenders': "Analysis/Dividend_Contenders"
-}
-
-# Ensure directories exist
-for folder in chart_output_dirs.values():
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-for folder in analysis_output_dirs.values():
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-# Function to create a text file for analysis
-def create_analysis_file(symbol, category):
-    analysis_path = os.path.join(analysis_output_dirs[category], f"{symbol}_analysis.txt")
-    with open(analysis_path, 'w') as f:
-        f.write(f"Analysis for {symbol}\n")
-        f.write("Insert your commentary and technical analysis here...\n")
-    print(f"Created analysis file for {symbol} at {analysis_path}")
-
-# Modify chart creation to also generate analysis file
-def create_candlestick_chart_with_analysis(data, symbol, category):
-    # Your existing chart creation code here...
+# Function to create and save candlestick charts
+def create_candlestick_chart(symbol, data):
+    # Reset index for mplfinance compatibility
+    data.reset_index(inplace=True)
+    data['Date'] = pd.to_datetime(data['Date'])
+    data.set_index('Date', inplace=True)
     
-    # Create a corresponding analysis file
-    create_analysis_file(symbol, category)
+    # Creating candlestick chart with moving averages
+    mpf.plot(data, type='candle', mav=(50, 200), volume=True, style='yahoo',
+             title=f'{symbol} Stock Price', savefig=f'Charts/Dividend_Kings/{symbol}_chart.png')
+    print(f"Chart created for {symbol}")
 
-# Example of generating chart and analysis for a stock
-# process_data function would call create_candlestick_chart_with_analysis
+# Function to process data from CSV
+def process_data(category):
+    csv_path = f'stock_data/{category}_stock_data.csv'
+    
+    # Read the CSV file
+    if os.path.exists(csv_path):
+        data = pd.read_csv(csv_path, parse_dates=True, index_col='Date')
+        
+        # Group by symbol and create a chart for each stock
+        for symbol, group in data.groupby('Symbol'):
+            create_candlestick_chart(symbol, group)
+    else:
+        print(f"CSV file for {category} not found.")
+
+# Process data for Dividend Kings
+process_data('Dividend_Kings')

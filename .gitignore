@@ -1,0 +1,20 @@
+# Ignore virtual environment
+stock_analysis_env/
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+
+# Ignore data files or large datasets
+*.csv
+*.log
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore any large libraries or binary files
+*.dylib
+
+# Ignore specific hidden files
+*.swp
+*.bak
